@@ -72,14 +72,26 @@ def make_local_export_path(
     rel_parent = rel_parts[:-1]
     return export_root.joinpath(*rel_parent, exported_filename)
 
-
 def load_dropbox_client_from_env() -> dropbox.Dropbox:
     token = os.environ.get("DROPBOX_TOKEN")
     if not token:
         raise RuntimeError("環境変数 DROPBOX_TOKEN が必要です。")
-    return dropbox.Dropbox(oauth2_access_token=token, timeout=300)
 
+    dbx = dropbox.Dropbox(oauth2_access_token=token, timeout=300)
 
+    # team space の root に切り替える
+    try:
+        from dropbox.common import PathRoot
+
+        acct = dbx.users_get_current_account()
+        root_info = getattr(acct, "root_info", None)
+        root_namespace_id = getattr(root_info, "root_namespace_id", None)
+        if root_namespace_id:
+            dbx = dbx.with_path_root(PathRoot.root(root_namespace_id))
+    except Exception:
+        pass
+
+    return dbx
 def iter_paper_paths(dbx: dropbox.Dropbox, root: str) -> Iterable[str]:
     result = dbx.files_list_folder(normalize_dropbox_path(root), recursive=True)
     while True:

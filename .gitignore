@@ -1,2 +1,9 @@
 .appsecret
-test_access.py
+test*
+credentials*
+token*
+*.csv
+exported
+approved
+
+
