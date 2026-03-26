@@ -5,6 +5,6 @@ token*
 *.csv
 exported
 approved
-__pycache__
+__pycache_
 
 
